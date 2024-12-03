@@ -1,14 +1,17 @@
 val kotlin_version: String by project
 val logback_version: String by project
+val ktor_version: String by project
 
 plugins {
-    kotlin("jvm") version "2.1.0"
-    id("io.ktor.plugin") version "3.0.1"
-    id("org.jetbrains.kotlin.plugin.serialization") version "$kotlin_version"
+    application
+    kotlin("jvm") version "1.9.22"
+    id("io.ktor.plugin") version "2.3.13"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.0"
 }
 
 group = "com.sindesoft"
 version = "0.0.1"
+
 
 application {
     mainClass.set("com.sindesoft.ApplicationKt")
