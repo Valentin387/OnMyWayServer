@@ -1,5 +1,6 @@
-package com.sindesoft
+package com.sindesoft.plugins
 
+import com.sindesoft.routes.userRouting
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -11,5 +12,7 @@ fun Application.configureRouting() {
         get("/") {
             call.respondText("Hello World!")
         }
+        //routes.UserRoutes
+        userRouting()
     }
 }

@@ -1,4 +1,4 @@
-package com.sindesoft
+package com.sindesoft.plugins
 
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
