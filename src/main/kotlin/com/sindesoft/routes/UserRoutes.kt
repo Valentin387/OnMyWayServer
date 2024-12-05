@@ -8,8 +8,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 private val users = mutableListOf(
-    User(1, "John", 30, "<EMAIL>"),
-    User(2, "William", 25, "<EMAIL>"),
+    User("1", "John", 30, "<EMAIL>"),
+    User("2", "William", 25, "<EMAIL>"),
 )
 
 fun Route.userRouting() {
@@ -18,17 +18,17 @@ fun Route.userRouting() {
             if (users.isNotEmpty()) {
                 call.respond(users)
             }else{
-                call.respondText("No hay usuarios",status = HttpStatusCode.OK)
+                call.respondText("There are no users",status = HttpStatusCode.OK)
             }
         }
 
         get("{id?}"){
-            val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respondText(
-                "Id no valido",
+            val id = call.parameters["id"]?: return@get call.respondText(
+                "Not valid Id",
                 status = HttpStatusCode.BadRequest
             )
-            val user = users.find { it.id == id } ?: return@get call.respondText(
-                "No se encontro el usuario con el id $id",
+            val user = users.find { it.googleId == id } ?: return@get call.respondText(
+                "Not found user with id: $id",
                 status = HttpStatusCode.NotFound
             )
             call.respond(user)
@@ -37,15 +37,15 @@ fun Route.userRouting() {
         post{
             val user = call.receive<User>()
             users.add(user)
-            call.respondText("Usuatio creado correctamente", status = HttpStatusCode.Created)
+            call.respondText("User created correctly", status = HttpStatusCode.Created)
         }
 
         delete("{id?}"){
-            val id = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respond(HttpStatusCode.BadRequest)
-            if (users.removeIf { it.id == id }) {
-                call.respondText("Usuario eliminado correctamente", status = HttpStatusCode.Accepted)
+            val id = call.parameters["id"]?: return@delete call.respond(HttpStatusCode.BadRequest)
+            if (users.removeIf { it.googleId == id }) {
+                call.respondText("User deleted correctly", status = HttpStatusCode.Accepted)
             } else {
-                call.respondText("No se encontro el usuario con el id $id", status = HttpStatusCode.NotFound)
+                call.respondText("Not found user with id: $id", status = HttpStatusCode.NotFound)
             }
         }
 
