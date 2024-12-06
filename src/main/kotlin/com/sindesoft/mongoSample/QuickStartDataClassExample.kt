@@ -1,4 +1,4 @@
-package com.sindesoft
+package com.sindesoft.mongoSample
 
 
 import com.mongodb.client.model.Filters.eq

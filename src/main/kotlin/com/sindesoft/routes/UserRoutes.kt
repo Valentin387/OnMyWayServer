@@ -1,6 +1,6 @@
 package com.sindesoft.routes
 
-import com.sindesoft.models.User
+import com.sindesoft.data.models.User
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -8,8 +8,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 private val users = mutableListOf(
-    User("1", "John", 30, "<EMAIL>"),
-    User("2", "William", 25, "<EMAIL>"),
+    User("1", "<EMAIL>", "John", "Doe"),
+    User("2", "<EMAIL>", "Carlos", "Wayne"),
 )
 
 fun Route.userRouting() {
