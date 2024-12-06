@@ -1,6 +1,7 @@
 val kotlin_version: String by project
 val logback_version: String by project
 val ktor_version: String by project
+val mongo_version: String by project
 
 plugins {
     application
@@ -32,4 +33,8 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
     testImplementation("io.ktor:ktor-server-test-host-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+
+    //MongoDB
+    implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$mongo_version")
+    implementation("org.mongodb:bson-kotlinx:$mongo_version")
 }
