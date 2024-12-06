@@ -1,11 +1,13 @@
 package com.sindesoft.utils
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 
 @OptIn(ExperimentalEncodingApi::class)
-fun decodeIdToken(idToken: String): String {
+fun decodeIdToken(idToken: String): Map<String, String> {
     // Split the token into its parts (header, payload, and signature)
     val parts = idToken.split(".")
 
@@ -25,5 +27,11 @@ fun decodeIdToken(idToken: String): String {
 
     // Decode using URL-safe Base64
     val decodedBytes = Base64.decode(paddedPayload)
-    return String(decodedBytes)
+    val jsonString = String(decodedBytes)
+    val jsonObject = Json.parseToJsonElement(jsonString).jsonObject
+
+    // Convert JsonObject to a map for easier handling
+    return jsonObject.mapValues { (_, value) ->
+        value.toString().removeSurrounding("\"") // Remove quotes from string values
+    }
 }
