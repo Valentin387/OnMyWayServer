@@ -9,6 +9,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import com.mongodb.client.model.Filters.eq
+import com.sindesoft.data.DTO.SignInResponse
 import kotlinx.coroutines.flow.firstOrNull
 import org.bson.codecs.pojo.annotations.BsonId
 
@@ -33,7 +34,13 @@ fun Route.authRouting() {
             ).firstOrNull()
 
             if (existingUser != null) {
-                call.respond(HttpStatusCode.OK, existingUser)
+                call.respond(
+                    HttpStatusCode.OK,
+                    SignInResponse(
+                        status = "login", // Indicate existing user
+                        user = existingUser
+                    )
+                )
             } else {
                 val newUser = User(
                     googleId = payload["sub"] ?: "",
@@ -47,9 +54,16 @@ fun Route.authRouting() {
                 val result = usersCollection.insertOne(newUser)
                 val assignedId = result.insertedId?.asObjectId()?.value
                 val userWithId = newUser.copy(id = assignedId)
-                call.respond(HttpStatusCode.Created, userWithId)
+                call.respond(
+                    HttpStatusCode.Created,
+                    SignInResponse(
+                        status = "signup", // Indicate new user creation
+                        user = userWithId
+                    )
+                )
             }
         }catch (e: Exception){
+            e.printStackTrace()
             call.respond(
                 HttpStatusCode.InternalServerError,
                 "Error occurred while processing signin request")
