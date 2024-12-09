@@ -29,5 +29,18 @@ Newer JDKs are backward compatible with older Java code, meaning they can run ap
 By following these steps, you should be able to set up and run your Ktor server successfully. If you experience issues, refer back to these steps to ensure compliance and compatibility throughout the setup process.
 
 ---
+# Environment Variables
 
-Feel free to modify this README as your project's requirements evolve or as you gather feedback from users. If more detailed instructions are needed for specific steps, consider expanding on those sections.
+Add your environment variables
+
+```env
+ANDROID_CLIENT_ID
+DB_PASSWORD
+DB_SERVER
+DB_USER
+WEB_APPLICATION_CLIENT_ID
+PORT
+```
+
+
+
