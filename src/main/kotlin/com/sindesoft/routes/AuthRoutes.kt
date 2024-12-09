@@ -44,8 +44,10 @@ fun Route.authRouting() {
                     profilePicture = payload["picture"] ?: ""
                 )
 
-                usersCollection.insertOne(newUser)
-                call.respond(HttpStatusCode.Created, newUser)
+                val result = usersCollection.insertOne(newUser)
+                val assignedId = result.insertedId?.asObjectId()?.value
+                val userWithId = newUser.copy(id = assignedId)
+                call.respond(HttpStatusCode.Created, userWithId)
             }
         }catch (e: Exception){
             call.respond(
