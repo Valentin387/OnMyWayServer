@@ -7,6 +7,7 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 
+
 fun main() {
     embeddedServer(
         Netty,
@@ -22,7 +23,10 @@ fun Application.module() {
     configureSerialization()
     configureRouting()
 
-    environment.monitor.subscribe(ApplicationStopped){
+
+    environment.monitor.subscribe(ApplicationStopped){ application ->
+        application.environment.log.info("Server is stopped")
         Database.mongoClient.close()
+        application.environment.log.info("Closed Connection to the database.")
     }
 }

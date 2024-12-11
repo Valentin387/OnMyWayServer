@@ -41,4 +41,7 @@ dependencies {
     //MongoDB
     implementation("org.mongodb:mongodb-driver-kotlin-coroutine:$mongo_version")
     implementation("org.mongodb:bson-kotlinx:$mongo_version")
+
+    //WebSockets
+    //implementation("io.ktor:ktor-server-websockets:$ktor_version")
 }
