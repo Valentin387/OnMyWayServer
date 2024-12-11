@@ -1,6 +1,7 @@
 package com.sindesoft.plugins
 
 import com.sindesoft.routes.authRouting
+import com.sindesoft.routes.socketRouting
 import com.sindesoft.routes.userRouting
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -19,5 +20,8 @@ fun Application.configureRouting() {
 
         //routes.AuthRoutes
         authRouting()
+
+        //routes.WebSocketRoutes
+        socketRouting()
     }
 }

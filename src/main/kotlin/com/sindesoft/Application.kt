@@ -16,7 +16,7 @@ fun main() {
     embeddedServer(
         Netty,
         port = System.getenv("PORT").toInt(),
-        host = "0.0.0.0",
+        host = "127.0.0.1",
         module = Application::module
     ).start(wait = true)
 
@@ -25,8 +25,8 @@ fun main() {
 
 fun Application.module() {
     configureSerialization()
-    configureRouting()
     configureSockets()
+    configureRouting()
 
     environment.monitor.subscribe(ApplicationStopped){ application ->
         application.environment.log.info("Server is stopped")
