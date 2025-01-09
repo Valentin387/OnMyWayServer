@@ -9,6 +9,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import com.mongodb.client.model.Filters.eq
+import com.mongodb.client.model.Updates.set
 import com.sindesoft.data.DTO.SignInResponse
 import kotlinx.coroutines.flow.firstOrNull
 import org.bson.codecs.pojo.annotations.BsonId
@@ -53,7 +54,15 @@ fun Route.authRouting() {
 
                 val result = usersCollection.insertOne(newUser)
                 val assignedId = result.insertedId?.asObjectId()?.value
-                val userWithId = newUser.copy(id = assignedId)
+                val assignedCode = assignedId?.toHexString()?.takeLast(6)
+
+                // Update the user in the database with the assignedCode
+                val updatedResult = usersCollection.updateOne(
+                    eq("_id", assignedId),
+                    set("assignedCode", assignedCode)
+                )
+
+                val userWithId = newUser.copy(id = assignedId, assignedCode = assignedCode!!)
                 call.respond(
                     HttpStatusCode.Created,
                     SignInResponse(
