@@ -13,6 +13,7 @@ data class User(
     @Serializable(with = ObjectIdSerializer::class)
     val id: ObjectId? = null,
     val googleId: String, // From `sub`
+    val assignedCode: String = "",
     val email: String,
     val emailVerified: Boolean,
     val givenName: String,
