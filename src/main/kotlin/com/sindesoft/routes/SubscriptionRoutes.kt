@@ -49,6 +49,18 @@ fun Route.subscriptionRouting() {
                     return@post
                 }
 
+                // Check if the user is trying to subscribe to their own channel
+                if(ObjectId(request.mongoId) == channelUser.id){
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        StatusResponse(
+                            "error",
+                            "You cannot subscribe to your own channel"
+                        )
+                    )
+                    return@post
+                }
+
                 //check if a subscription already exists
                 val existingSubscription = subscriptionCollection.find(
                     and(
