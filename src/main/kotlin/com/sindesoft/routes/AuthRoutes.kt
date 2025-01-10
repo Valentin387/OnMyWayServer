@@ -49,7 +49,9 @@ fun Route.authRouting() {
                     emailVerified = payload["email_verified"]?.toBoolean() ?: false,
                     givenName = payload["given_name"] ?: "",
                     familyName = payload["family_name"] ?: "",
-                    profilePicture = payload["picture"] ?: ""
+                    profilePicture = payload["picture"] ?: "",
+                    geofenceRadius = 150,
+                    firstSignupTimestamp = System.currentTimeMillis().toString() //timestamp in milliseconds
                 )
 
                 val result = usersCollection.insertOne(newUser)
