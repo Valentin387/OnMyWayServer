@@ -174,13 +174,14 @@ fun Route.subscriptionRouting() {
                     // No subscription was deleted
                     call.respond(
                         HttpStatusCode.NotFound,
-                        "Subscription not found"
+                        mapOf("status" to "error", "message" to "Subscription not found")
+
                     )
                 }else{
                     // Successfully deleted
                     call.respond(
                         HttpStatusCode.OK,
-                        "Subscription deleted successfully"
+                        mapOf("status" to "error", "message" to "Subscription deleted successfully")
                     )
                 }
 
@@ -188,6 +189,71 @@ fun Route.subscriptionRouting() {
                 // Handle general errors
                 e.printStackTrace()
                 call.respond(HttpStatusCode.InternalServerError, "An error occurred while deleting the subscription")
+            }
+        }
+
+        get("fetch_subscribers/{id}"){
+            try{
+                val userId = call.parameters["id"]
+
+                //validate user ID
+                if(userId.isNullOrEmpty()){
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        mapOf("status" to "error", "message" to "Missing or invalid user ID")
+                    )
+                    return@get
+                }
+
+                // Check if the user exists
+                val userExists = usersCollection.find(eq("_id", userId)).toList().isNotEmpty()
+                if (!userExists){
+                    call.respond(
+                        HttpStatusCode.NotFound,
+                        mapOf("status" to "error", "message" to "User not found")
+                    )
+                    return@get
+                }
+
+                // Find all subscriptions where the given user is the channel
+                val subscriptions = subscriptionCollection.find(eq("channelId", userId)).toList()
+
+                if(subscriptions.isEmpty()){
+                    call.respond(
+                        HttpStatusCode.OK,
+                        emptyList<SubscriptionFetchResponse>()
+                    )
+                    return@get
+                }
+
+                // Map subscriptions to the response format
+                val responses = subscriptions.mapNotNull { subscription ->
+                    val subscriber = usersCollection.find(
+                        eq("_id", ObjectId(subscription.userId))
+                    ).firstOrNull()
+
+                    subscriber?.let {
+                        SubscriptionFetchResponse(
+                            subscriptionId = subscription.id?: "",
+                            givenName = it.givenName,
+                            familyName = it.familyName,
+                            assignedCode = it.assignedCode
+                        )
+                    }
+                }
+
+                call.respond(
+                    HttpStatusCode.OK,
+                    responses
+                )
+
+            }catch (e: IllegalArgumentException) {
+                // Handle invalid ObjectId format
+                call.respond(HttpStatusCode.BadRequest, "Invalid user ID format")
+            } catch (e: Exception) {
+                // Handle general errors
+                e.printStackTrace()
+                call.respond(HttpStatusCode.InternalServerError, "An error occurred while fetching subscribers")
             }
         }
 
