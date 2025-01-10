@@ -4,6 +4,8 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.Filters.and
 import com.sindesoft.data.DTO.NewSubscriptionRequest
 import com.mongodb.client.model.Filters.eq
+import com.sindesoft.data.DTO.StatusResponse
+import com.sindesoft.data.DTO.StatusSubscriptionFetchResponse
 import com.sindesoft.data.DTO.SubscriptionFetchResponse
 import com.sindesoft.data.database.Database.database
 import com.sindesoft.data.models.Subscription
@@ -39,7 +41,10 @@ fun Route.subscriptionRouting() {
                     // The assigned code is invalid
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        mapOf("status" to "error", "message" to "Invalid assignedCode")
+                        StatusResponse(
+                            "error",
+                            "Invalid assignedCode"
+                        )
                     )
                     return@post
                 }
@@ -56,7 +61,10 @@ fun Route.subscriptionRouting() {
                     // That very same subscription already exists
                     call.respond(
                         HttpStatusCode.Conflict,
-                        mapOf("status" to "error", "message" to "You are already subscribed to this channel")
+                        StatusResponse(
+                            "error",
+                            "You are already subscribed to this channel"
+                        )
                     )
                     return@post
                 }
@@ -74,7 +82,10 @@ fun Route.subscriptionRouting() {
                 // Respond with success
                 call.respond(
                     HttpStatusCode.Created,
-                    mapOf("status" to "success", "message" to "Subscription created successfully")
+                    StatusResponse(
+                        "success",
+                        "Subscription created successfully"
+                    )
                 )
 
 
@@ -82,7 +93,10 @@ fun Route.subscriptionRouting() {
                 e.printStackTrace()
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    mapOf("status" to "error", "message" to "An error occurred while creating the subscription")
+                    StatusResponse(
+                        "error",
+                        "An error occurred while creating the subscription"
+                    )
                 )
             }
         }
@@ -96,7 +110,10 @@ fun Route.subscriptionRouting() {
                 if (userId.isNullOrEmpty()){
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        mapOf("status" to "error", "message" to "Missing or invalid userId")
+                        StatusResponse(
+                            "error",
+                            "Missing or invalid userId"
+                        )
                     )
                     return@get
                 }
@@ -106,7 +123,10 @@ fun Route.subscriptionRouting() {
                 if(!userExists){
                     call.respond(
                         HttpStatusCode.NotFound,
-                        mapOf("status" to "error", "message" to "User not found")
+                        StatusResponse(
+                            "error",
+                            "User not found"
+                        )
                     )
                     return@get
                 }
@@ -117,7 +137,10 @@ fun Route.subscriptionRouting() {
                 if(subscriptions.isEmpty()){
                     call.respond(
                         HttpStatusCode.OK,
-                        mapOf("status" to "error", "message" to "No subscriptions found", "channels" to emptyList<User>())
+                        StatusResponse(
+                            "error",
+                            "No subscriptions found"
+                        )
                     )
                     return@get
                 }
@@ -143,14 +166,20 @@ fun Route.subscriptionRouting() {
 
                 call.respond(
                     HttpStatusCode.OK,
-                    mapOf("status" to "success", "subscriptions" to responseList)
+                    StatusSubscriptionFetchResponse(
+                        "success",
+                        responseList
+                    )
                 )
 
             }catch(e: Exception){
                 e.printStackTrace()
                 call.respond(
                     HttpStatusCode.InternalServerError,
-                    mapOf("status" to "error", "message" to "An error occurred while fetching subscriptions")
+                    StatusResponse(
+                        "error",
+                        "An error occurred while fetching subscriptions"
+                    )
                 )
             }
 
@@ -174,14 +203,19 @@ fun Route.subscriptionRouting() {
                     // No subscription was deleted
                     call.respond(
                         HttpStatusCode.NotFound,
-                        mapOf("status" to "error", "message" to "Subscription not found")
-
+                        StatusResponse(
+                            "error",
+                            "Subscription not found"
+                        )
                     )
                 }else{
                     // Successfully deleted
                     call.respond(
                         HttpStatusCode.OK,
-                        mapOf("status" to "error", "message" to "Subscription deleted successfully")
+                        StatusResponse(
+                            "error",
+                            "Subscription deleted successfully"
+                        )
                     )
                 }
 
@@ -200,7 +234,10 @@ fun Route.subscriptionRouting() {
                 if(userId.isNullOrEmpty()){
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        mapOf("status" to "error", "message" to "Missing or invalid user ID")
+                        StatusResponse(
+                            "error",
+                            "Missing or invalid userId"
+                        )
                     )
                     return@get
                 }
@@ -210,7 +247,10 @@ fun Route.subscriptionRouting() {
                 if (!userExists){
                     call.respond(
                         HttpStatusCode.NotFound,
-                        mapOf("status" to "error", "message" to "User not found")
+                        StatusResponse(
+                            "error",
+                            "User not found"
+                        )
                     )
                     return@get
                 }
