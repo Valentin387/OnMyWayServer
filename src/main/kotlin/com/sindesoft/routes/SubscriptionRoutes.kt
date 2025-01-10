@@ -94,7 +94,7 @@ fun Route.subscriptionRouting() {
                 val existingSubscription = subscriptionCollection.find(
                     and(
                         eq("userId", request.mongoId),
-                        eq("channelId", channelUser.id)
+                        eq("channelId", channelUser.id.toString())
                     )
                 ).firstOrNull()
 
