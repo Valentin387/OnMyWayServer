@@ -32,6 +32,35 @@ fun Route.subscriptionRouting() {
                 //receive an object of type NewSubscriptionRequest
                 val request = call.receive<NewSubscriptionRequest>()
 
+                // Check if request.mongoId is a valid 24-character hexadecimal string
+                if (request.mongoId.isEmpty() || request.mongoId.length != 24 || !request.mongoId.matches(Regex("^[a-fA-F0-9]{24}$"))) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        StatusResponse(
+                            "error",
+                            "Invalid Mongo ID format"
+                        )
+                    )
+                    return@post
+                }
+
+                // Verify that exists a user with the _id equal to request.mongoId
+                val existingUser = usersCollection.find(
+                    eq("_id", ObjectId(request.mongoId))
+                ).toList().isNotEmpty()
+
+                if (!existingUser){
+                    // The mongo id is invalid
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        StatusResponse(
+                            "error",
+                            "Invalid mongo Id"
+                        )
+                    )
+                    return@post
+                }
+
                 //Fetch the user (channel) ID based on assignedCode
                 val channelUser = usersCollection.find(
                     eq("assignedCode", request.assignedCode)
@@ -119,7 +148,19 @@ fun Route.subscriptionRouting() {
                 // Extract the userId from the query parameters
                 val userId = call.request.queryParameters["userId"]
 
-                if (userId.isNullOrEmpty()){
+                // Check if request.mongoId is a valid 24-character hexadecimal string
+                if (userId!!.isEmpty() || userId.length != 24 || !userId.matches(Regex("^[a-fA-F0-9]{24}$"))) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        StatusResponse(
+                            "error",
+                            "Invalid Mongo ID format"
+                        )
+                    )
+                    return@get
+                }
+
+                if (userId.isEmpty()){
                     call.respond(
                         HttpStatusCode.BadRequest,
                         StatusResponse(
@@ -168,7 +209,7 @@ fun Route.subscriptionRouting() {
                     val channelUser = channelUsers.find { it.id.toString() == subscription.channelId }
                     channelUser?.let {
                         SubscriptionFetchResponse(
-                            subscriptionId = subscription.id?: "",
+                            subscriptionId = subscription.id,
                             givenName = it.givenName,
                             familyName = it.familyName,
                             assignedCode = it.assignedCode
@@ -201,8 +242,20 @@ fun Route.subscriptionRouting() {
             try{
                 val subscriptionId = call.parameters["id"]
 
+                // Check if request.mongoId is a valid 24-character hexadecimal string
+                if (subscriptionId.isNullOrEmpty() || subscriptionId.length != 24 || !subscriptionId.matches(Regex("^[a-fA-F0-9]{24}$"))) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        StatusResponse(
+                            "error",
+                            "Invalid Mongo ID format"
+                        )
+                    )
+                    return@delete
+                }
+
                 // Validate the provided subscription ID
-                if(subscriptionId.isNullOrEmpty()){
+                if(subscriptionId.isEmpty()){
                     call.respond(HttpStatusCode.BadRequest, "Missing or invalid subscription ID")
                     return@delete
                 }
@@ -225,7 +278,7 @@ fun Route.subscriptionRouting() {
                     call.respond(
                         HttpStatusCode.OK,
                         StatusResponse(
-                            "error",
+                            "success",
                             "Subscription deleted successfully"
                         )
                     )
@@ -242,8 +295,20 @@ fun Route.subscriptionRouting() {
             try{
                 val userId = call.parameters["id"]
 
+                // Check if request.mongoId is a valid 24-character hexadecimal string
+                if (userId.isNullOrEmpty() || userId.length != 24 || !userId.matches(Regex("^[a-fA-F0-9]{24}$"))) {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        StatusResponse(
+                            "error",
+                            "Invalid Mongo ID format"
+                        )
+                    )
+                    return@get
+                }
+
                 //validate user ID
-                if(userId.isNullOrEmpty()){
+                if(userId.isEmpty()){
                     call.respond(
                         HttpStatusCode.BadRequest,
                         StatusResponse(
@@ -255,7 +320,7 @@ fun Route.subscriptionRouting() {
                 }
 
                 // Check if the user exists
-                val userExists = usersCollection.find(eq("_id", userId)).toList().isNotEmpty()
+                val userExists = usersCollection.find(eq("_id", ObjectId(userId))).toList().isNotEmpty()
                 if (!userExists){
                     call.respond(
                         HttpStatusCode.NotFound,
@@ -286,7 +351,7 @@ fun Route.subscriptionRouting() {
 
                     subscriber?.let {
                         SubscriptionFetchResponse(
-                            subscriptionId = subscription.id?: "",
+                            subscriptionId = subscription.id,
                             givenName = it.givenName,
                             familyName = it.familyName,
                             assignedCode = it.assignedCode
