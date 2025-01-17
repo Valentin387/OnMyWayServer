@@ -136,10 +136,6 @@ fun Route.trackingRouting(){
                         .sort(descending("date")) // Sort by date to get the latest location
                         .firstOrNull()
 
-                    application.environment.log.info("\n\n")
-                    application.environment.log.info(latestLocation.toString())
-                    application.environment.log.info("\n\n")
-
                     // Fetch the respective User from UserCollection
                     val user = usersCollection.
                     find(eq("_id", ObjectId(channelId)))
