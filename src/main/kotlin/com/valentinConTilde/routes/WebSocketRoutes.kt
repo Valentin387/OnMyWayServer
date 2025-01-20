@@ -158,10 +158,10 @@ fun Route.socketRouting(){
                 ).toList()
 
                 application.log.info("\n\nSubscribers: $subscribers")
+                val user = usersCollection.find(eq("_id", ObjectId(updatedRequest.userId))).firstOrNull()
 
                 // Broadcast to active connections of subscribers
                 for (subscriber in subscribers) {
-                    val user = usersCollection.find(eq("_id", ObjectId(subscriber.userId))).firstOrNull()
                     val userLocationInMap = UserLocationInMap(
                         userId = updatedRequest.userId,
                         givenName = user?.givenName?:"N/A",
