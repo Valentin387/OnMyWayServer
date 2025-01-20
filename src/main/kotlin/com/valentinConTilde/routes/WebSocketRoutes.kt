@@ -17,6 +17,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 import com.mongodb.client.model.Filters.eq
+import com.valentinConTilde.data.DTO.UserLocationInMap
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import org.bson.types.ObjectId
 
@@ -159,8 +161,24 @@ fun Route.socketRouting(){
 
                 // Broadcast to active connections of subscribers
                 for (subscriber in subscribers) {
+                    val user = usersCollection.find(eq("_id", ObjectId(subscriber.userId))).firstOrNull()
+                    val userLocationInMap = UserLocationInMap(
+                        userId = updatedRequest.userId,
+                        givenName = user?.givenName?:"N/A",
+                        familyName = user?.familyName?:"N/A",
+                        latitude = updatedRequest.latitude,
+                        longitude = updatedRequest.longitude,
+                        date = updatedRequest.date,
+                        dateServer = updatedRequest.dateServer,
+                        speed = updatedRequest.speed,
+                        persistence = updatedRequest.persistence,
+                        batteryPercentage = updatedRequest.batteryPercentage,
+                        applicationVersion = updatedRequest.applicationVersion,
+                        locationAccuracy =updatedRequest.locationAccuracy
+                    )
+
                     activeConnections[subscriber.userId]?.let { session ->
-                        session.send(updatedRequest.toString())
+                        session.send(userLocationInMap.toString())
                     }
                 }
 
