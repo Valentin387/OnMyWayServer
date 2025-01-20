@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 
 import com.mongodb.client.model.Filters.eq
 import kotlinx.coroutines.flow.toList
+import org.bson.types.ObjectId
 
 fun Route.socketRouting(){
 
@@ -73,7 +74,27 @@ fun Route.socketRouting(){
 
         webSocket("/tracking_updates"){
             val userId = call.request.queryParameters["userId"]
+
+            //Verify if the user exists
+            // Verify that exists a user with the _id equal to request.mongoId
+            val existingUser = usersCollection.find(
+                eq("_id", ObjectId(userId))
+            ).toList().isNotEmpty()
+
+            if (!existingUser){
+                // The mongo id is invalid
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    StatusResponse(
+                        "error",
+                        "Invalid mongo Id"
+                    )
+                )
+                return@webSocket
+            }
+
             if(userId.isNullOrEmpty()){
+                application.log.info("closing session for userId: $userId")
                 close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Unauthorized"))
                 return@webSocket
             }
@@ -85,11 +106,15 @@ fun Route.socketRouting(){
                 for(frame in incoming){
                     frame as? Frame.Text ?: continue
                     val receiveText = frame.readText()
-                    application.log.info("Received message from $userId: $receiveText")
+                        application.log.info("Received message from $userId: $receiveText")
+                        send(Frame.Text("Received message from $userId: $receiveText!"))
+                        //log activeConnections
+                        //application.log.info(activeConnections.toString())
                 }
             }catch (e: Exception){
                 application.log.error("WebSocket error for user: $userId: ${e.message}", e)
             }finally{
+                application.log.info("closing session for user: $userId")
                 activeConnections.remove(userId)
             }
         }
@@ -129,6 +154,8 @@ fun Route.socketRouting(){
                 val subscribers = subscriptionCollection.find(
                     eq("channelId", request.userId)
                 ).toList()
+
+                application.log.info("\n\nSubscribers: $subscribers")
 
                 // Broadcast to active connections of subscribers
                 for (subscriber in subscribers) {
