@@ -1,5 +1,7 @@
 package com.valentinConTilde.routes
 
+import com.mongodb.client.model.Filters.*
+import com.mongodb.client.model.Indexes.ascending
 import com.valentinConTilde.data.DTO.StatusResponse
 import com.valentinConTilde.data.database.Database.database
 import com.valentinConTilde.data.models.User
@@ -9,13 +11,17 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import com.mongodb.client.model.Filters.eq
 import com.mongodb.client.model.Indexes.descending
 import com.valentinConTilde.data.DTO.UserLocationInMap
 import com.valentinConTilde.data.models.Subscription
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import org.bson.types.ObjectId
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 fun Route.trackingRouting(){
 
@@ -182,6 +188,83 @@ fun Route.trackingRouting(){
                 )
             }
         }
+
+        get("user_location_history") {
+            try {
+                val userId = call.request.queryParameters["userId"]
+                val startDate = call.request.queryParameters["startDate"]
+                val endDate = call.request.queryParameters["endDate"]
+
+                // Validate MongoDB ObjectId format
+                if (userId.isNullOrBlank() || userId.length != 24 || !userId.matches(Regex("^[a-fA-F0-9]{24}$"))) {
+                    call.respond(HttpStatusCode.BadRequest, StatusResponse("error", "Invalid Mongo ID format"))
+                    return@get
+                }
+
+                if (startDate.isNullOrBlank() || endDate.isNullOrBlank()) {
+                    call.respond(HttpStatusCode.BadRequest, StatusResponse("error", "Missing startDate or endDate"))
+                    return@get
+                }
+
+                if (startDate > endDate) {
+                    call.respond(HttpStatusCode.BadRequest, StatusResponse("error", "Invalid date range"))
+                    return@get
+                }
+
+                //application.environment.log.info("\n\nstartDate: $startDate\n")
+                //application.environment.log.info("\n\nendDate: $endDate\n")
+
+                // Query MongoDB for user locations within the date range
+                val userLocations = userLocationCollection
+                    .find(
+                        and(
+                            eq("userId", userId),
+                            gte("date", startDate),
+                            lte("date", endDate)
+                        )
+                    )
+                    .sort(ascending("date")) // Ensure results are sorted chronologically
+                    .toList()
+
+                if (userLocations.isEmpty()) {
+                    call.respond(HttpStatusCode.OK, emptyList<UserLocationInMap>())
+                    return@get
+                }
+
+                // Fetch user details
+                val user = usersCollection.find(eq("_id", ObjectId(userId))).firstOrNull()
+                if (user == null) {
+                    call.respond(HttpStatusCode.NotFound, StatusResponse("error", "User not found"))
+                    return@get
+                }
+
+                // Convert UserLocation to UserLocationInMap
+                val locationList = userLocations.map { location ->
+                    UserLocationInMap(
+                        userId = location.userId,
+                        givenName = user.givenName,
+                        familyName = user.familyName,
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        date = location.date,
+                        dateServer = location.dateServer,
+                        speed = location.speed,
+                        persistence = location.persistence,
+                        batteryPercentage = location.batteryPercentage,
+                        applicationVersion = location.applicationVersion,
+                        locationAccuracy = location.locationAccuracy
+                    )
+                }
+
+                call.respond(HttpStatusCode.OK, locationList)
+
+            } catch (e: IllegalArgumentException) {
+                call.respond(HttpStatusCode.BadRequest, "Invalid user ID format")
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.InternalServerError, StatusResponse("error", "Error retrieving location history"))
+            }
+        }
+
 
     }
 }
