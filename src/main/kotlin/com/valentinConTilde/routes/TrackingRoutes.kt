@@ -192,8 +192,8 @@ fun Route.trackingRouting(){
         get("user_location_history") {
             try {
                 val userId = call.request.queryParameters["userId"]
-                val startDateStr = call.request.queryParameters["startDate"]
-                val endDateStr = call.request.queryParameters["endDate"]
+                val startDate = call.request.queryParameters["startDate"]
+                val endDate = call.request.queryParameters["endDate"]
 
                 // Validate MongoDB ObjectId format
                 if (userId.isNullOrBlank() || userId.length != 24 || !userId.matches(Regex("^[a-fA-F0-9]{24}$"))) {
@@ -201,15 +201,10 @@ fun Route.trackingRouting(){
                     return@get
                 }
 
-                if (startDateStr.isNullOrBlank() || endDateStr.isNullOrBlank()) {
+                if (startDate.isNullOrBlank() || endDate.isNullOrBlank()) {
                     call.respond(HttpStatusCode.BadRequest, StatusResponse("error", "Missing startDate or endDate"))
                     return@get
                 }
-
-                // Convert date strings to Unix timestamps
-                val formatter = DateTimeFormatter.ofPattern("yyyy-M-d H:mm")
-                val startDate = LocalDateTime.parse(startDateStr, formatter).toInstant(ZoneOffset.UTC).toEpochMilli().toString()
-                val endDate = LocalDateTime.parse(endDateStr, formatter).toInstant(ZoneOffset.UTC).toEpochMilli().toString()
 
                 if (startDate > endDate) {
                     call.respond(HttpStatusCode.BadRequest, StatusResponse("error", "Invalid date range"))
